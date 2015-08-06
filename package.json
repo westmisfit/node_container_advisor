@@ -13,6 +13,7 @@
     "aws-sdk": "^2.1.43",
     "docker-allcontainers": "^0.4.0",
     "docker-stats": "^0.4.0",
+    "minimist": "^1.1.2",
     "moment": "^2.10.6",
     "through2": "^2.0.0"
   }
