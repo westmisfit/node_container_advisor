@@ -1,5 +1,7 @@
 # Usage
 
+quickly start a container to test
+
 ```shell
 docker run --rm \
     --privileged \
@@ -11,14 +13,10 @@ docker run --rm \
     node index.js --test --dry-run
 ```
 
+command line arguments
+
 ```
 --test       put metric data to ECS Custom Test Metrics
 --dry-run    only print metric data, do not put to cloudwatch
 --once       only put/print metric data once
-```
-
-# Build
-
-```shell
-docker build -t misfit/docker-stats-cloudwatch .
 ```
