@@ -245,7 +245,7 @@ function cli() {
     // so we can avoid catching logs for unwanted containers
     // , matchByName: /hello/ // optional
     // , matchByImage: /matteocollina/ //optional
-    // , skipByName: /ecs-agent/ //optional
+    , skipByName: /ecs-agent/ //optional
     // , skipByImage: /.*dockerfile.*/ //optional
   }
   init(init_opts);
