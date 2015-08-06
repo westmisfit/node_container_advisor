@@ -68,11 +68,11 @@ function init() {
       ecs_task_family: c.ECSTaskFamily,
       ecs_container_name: c.ECSContainerName,
       cpu_usage: v.stats.cpu_stats.cpu_usage.total_usage,
-      cpu_percent: v.stats.cpu_stats.cpu_usage.cpu_percent.toFixed(2),
+      cpu_percent: Number(v.stats.cpu_stats.cpu_usage.cpu_percent.toFixed(2)),
       network_rx_bytes: v.stats.network.rx_bytes,
       network_tx_bytes: v.stats.network.tx_bytes,
       memory_usage: v.stats.memory_stats.usage,
-      memory_percent: (v.stats.memory_stats.usage / v.stats.memory_stats.limit * 100).toFixed(2),
+      memory_percent: Number((v.stats.memory_stats.usage / v.stats.memory_stats.limit * 100).toFixed(2)),
       timestamp: moment().utc().toISOString()
     }
     // console.log(JSON.stringify(m))
@@ -122,7 +122,7 @@ function cloudwatchStorageDriver(opts){
         MetricName: "MemoryUsage",
         Dimensions: dimensions,
         Timestamp: m.timestamp,
-        Value: (m.memory_usage/1024/1024).toFixed(0),
+        Value: Number((m.memory_usage/1024/1024).toFixed(2)),
         Unit: "Megabytes"
       }
       , {
@@ -143,14 +143,14 @@ function cloudwatchStorageDriver(opts){
         MetricName: "NetworkIn",
         Dimensions: dimensions,
         Timestamp: m.timestamp,
-        Value: (m.network_rx_bytes/1024).toFixed(2),
+        Value: Number((m.network_rx_bytes/1024).toFixed(2)),
         Unit: "Kilobytes"
       }
       , {
         MetricName: "NetworkOut",
         Dimensions: dimensions,
         Timestamp: m.timestamp,
-        Value: (m.network_tx_bytes/1024).toFixed(2),
+        Value: Number((m.network_tx_bytes/1024).toFixed(2)),
         Unit: "Kilobytes"
       }
     ];
@@ -182,7 +182,7 @@ function cloudwatchStorageDriver(opts){
       cloudwatch.putMetricData(data, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
         else     console.log(data);           // successful response
-        
+
         if (opts.once) {
           console.log("run only once.");
           process.exit();
