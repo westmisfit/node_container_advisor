@@ -4,10 +4,6 @@ var through = require('through2')
   , moment = require('moment')
   , AWS = require('aws-sdk')
 
-// const
-var per3seconds = 3 * 1000;
-var perminute = 60 * 1000;
-
 var containers = {};
 var metrics = [];
 var instance_id = "ip_192_168_0_1";
@@ -204,9 +200,9 @@ function cloudwatchStorageDriver(opts){
 
   ret.save = function() {
     var _metrics = trimMetrics(metrics);
-    metrics = [];
-    // debug('total %d metrics', _metrics.length)
+    // debug('total %d metrics, left %d metrics after trim', metrics.length, _metrics.length);
     // debug(JSON.stringify(_metrics));
+    metrics = [];
 
     var metric_data = [];
     _metrics.forEach(function(m) {
@@ -256,7 +252,7 @@ function cli() {
     dry_run: !!argv['dry-run'],
     once: !!argv['once']
   };
-  var interval = (argv.test ? per3seconds : perminute);
+  var interval = (argv.interval || 60) * 1000;
   start(opts, interval);
 }
 

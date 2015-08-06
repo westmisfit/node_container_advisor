@@ -10,13 +10,14 @@ docker run --rm \
     -e AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY \
     -e AWS_DEFAULT_REGION=YOUR_AWS_DEFAULT_REGION \
     misfit/docker-stats-cloudwatch \
-    node index.js --test --dry-run
+    node index.js --test --dry-run --interval=3
 ```
 
 command line arguments
 
-```
---test       put metric data to ECS Custom Test Metrics
---dry-run    only print metric data, do not put to cloudwatch
---once       only put/print metric data once
+```shell
+--test       put metric data to ECS Custom Test Metrics, default is false
+--dry-run    only print metric data, do not put to cloudwatch default is false
+--once       only put/print metric data once, default is false
+--interval   put/print metric data interval, unit is second, default is 60
 ```
