@@ -8,19 +8,7 @@ var containers = {};
 var metrics = [];
 var instance_id = "ip_192_168_0_1";
 
-function init() {
-  var opts = {
-      docker: null // here goes options for Dockerode
-    , events: null // an instance of docker-allcontainers
-
-    // the following options limit the containers being matched
-    // so we can avoid catching logs for unwanted containers
-    // , matchByName: /hello/ // optional
-    // , matchByImage: /matteocollina/ //optional
-    // , skipByName: /.*pasteur.*/ //optional
-    // , skipByImage: /.*dockerfile.*/ //optional
-  }
-
+function init(opts) {
   // docker events explain
   // http://gliderlabs.com/blog/2015/04/14/docker-events-explained/
   var ee = allContainers(opts);
@@ -244,16 +232,33 @@ function error() {
 }
 
 function cli() {
-  var argv = require('minimist')(process.argv.slice(2))
-  init();
-  var opts = {
+  var argv = require('minimist')(process.argv.slice(2));
+  // debug(argv);
+  
+  instance_id = argv['instance-id'];
+
+  var init_opts = {
+      docker: null // here goes options for Dockerode
+    , events: null // an instance of docker-allcontainers
+
+    // the following options limit the containers being matched
+    // so we can avoid catching logs for unwanted containers
+    // , matchByName: /hello/ // optional
+    // , matchByImage: /matteocollina/ //optional
+    // , skipByName: /ecs-agent/ //optional
+    // , skipByImage: /.*dockerfile.*/ //optional
+  }
+  init(init_opts);
+
+  var run_opts = {
     type: "cloudwatch",
-    namespace: (argv.test ? "ECS Custom Test" : "ECS Custom"),
+    namespace: (argv['test'] ? "ECS Custom Test" : "ECS Custom"),
     dry_run: !!argv['dry-run'],
     once: !!argv['once']
   };
-  var interval = (argv.interval || 60) * 1000;
-  start(opts, interval);
+  // debug(instance_id);
+  var interval = (argv['interval'] || 60) * 1000;
+  start(run_opts, interval);
 }
 
 if (require.main === module) {
