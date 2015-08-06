@@ -44,25 +44,26 @@ function init() {
         }
       }
       containers[meta.id.substring(0,12)] = c;
-      // console.log('add container \n', c, '\n into containers \n', containers);
+      // debug('add container \n', c, '\n into containers \n', containers);
     })
   });
 
   // stop & die
   // https://github.com/mcollina/docker-allcontainers/blob/master/allcontainers.js#L69
   ee.on('stop', function(meta, container) {
-    // console.log("stop...", meta)
+    // debug("stop...", meta)
     var c = containers[meta.id.substring(0,12)];
     delete containers[meta.id.substring(0,12)];
-    // console.log('remove container \n', c, '\n from containers \n', containers);
+    // debug('remove container \n', c, '\n from containers \n', containers);
   });
 
   stats({events: ee}).pipe(through.obj(function(v, enc, next) {
-    // console.log(JSON.stringify(stat))
+    // debug(JSON.stringify(stat))
     var c = containers[v.id]
     if (!c) { return next(); }
     // timestamp format: 2015-08-06T10:14:54.000Z
     var m = {
+      id: c.Id,
       container_name: c.ContainerName,
       image_name: c.ImageName,
       ecs_task_family: c.ECSTaskFamily,
@@ -75,7 +76,7 @@ function init() {
       memory_percent: Number((v.stats.memory_stats.usage / v.stats.memory_stats.limit * 100).toFixed(2)),
       timestamp: moment().utc().toISOString()
     }
-    // console.log(JSON.stringify(m))
+    // debug(JSON.stringify(m))
     metrics.push(m)
     return next();
   }));
@@ -99,8 +100,8 @@ function cloudwatchStorageDriver(opts){
   var region = process.env['AWS_DEFAULT_REGION'] || 'us-east-1';
   var ret = {};
 
-  console.log('namespace:', namespace);
-  console.log('region:   ', region);
+  info('namespace:', namespace);
+  info('region:   ', region);
 
   AWS.config.update({region: region});
 
@@ -154,13 +155,58 @@ function cloudwatchStorageDriver(opts){
         Unit: "Kilobytes"
       }
     ];
-    // console.log(metric_data);
+    // debug(metric_data);
     return metric_data;
   }
 
+  function trimMetrics(metrics) {
+    // trim duplicated container metric, keep the last
+    var map = {};
+    metrics.forEach(function(m) {
+      map[m.id] = m;
+    });
+    var _metrics = [];
+    for (var k in map) {
+      if (map[k]) {
+        _metrics.push(map[k]);
+      }
+    }
+    return _metrics;
+  }
+
+  function putMetricData(metric_data, cb) {
+    // The collection MetricData must not have a size greater than 20.
+    var part;
+    var data_array = [];
+
+    if (metric_data.length === 0) {
+      cb(new Error("no metric data to put."), null);
+    }
+
+    (function next(err, data) {
+      if (err) { return cb(err); }
+      if (data) { data_array.push(data); }
+      if (metric_data.length === 0) { return cb(null, data_array); }
+
+      part = metric_data.slice(0,20);
+      metric_data = metric_data.slice(20);
+      // debug('process %d, left %d', part.length, metric_data.length);
+
+      params = { 
+        MetricData: part,
+        Namespace: namespace
+      };
+      cloudwatch.putMetricData(params, next);
+      // debug(JSON.stringify(part));
+      // next(null, "{\"Response\":\"OK\"}");
+    })(null, null);
+  }
+
   ret.save = function() {
-    var _metrics = metrics;
+    var _metrics = trimMetrics(metrics);
     metrics = [];
+    // debug('total %d metrics', _metrics.length)
+    // debug(JSON.stringify(_metrics));
 
     var metric_data = [];
     _metrics.forEach(function(m) {
@@ -168,23 +214,18 @@ function cloudwatchStorageDriver(opts){
     });
 
     if (opts.dry_run) {
-      console.log(JSON.stringify(metric_data));
+      info(JSON.stringify(metric_data));
       if (opts.once) {
-        console.log("run only once.");
+        info("run only once.");
         process.exit();
       }
     } else {
-      // console.log("put metric data to cloudwatch...");
-      data = { 
-          MetricData: metric_data,
-          Namespace: namespace
-      };
-      cloudwatch.putMetricData(data, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+      putMetricData(metric_data, function(err, data) {
+        if (err) error(err, err.stack); // an error occurred
+        else     info(data);            // successful response
 
         if (opts.once) {
-          console.log("run only once.");
+          info("run only once.");
           process.exit();
         }
       });
@@ -192,6 +233,18 @@ function cloudwatchStorageDriver(opts){
   }
 
   return ret;
+}
+
+function debug() {
+  console.log.apply(console, arguments);
+}
+
+function info() {
+  console.log.apply(console, arguments);
+}
+
+function error() {
+  console.log.apply(console, arguments);
 }
 
 function cli() {
