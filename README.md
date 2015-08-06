@@ -1,6 +1,6 @@
-# docker-stats-cloudwatch
+# node_container_advisor
 
-put docker container cpu memory network stats to cloudwatch.
+put container stats to cloudwatch.
 
 # Usage
 
@@ -13,7 +13,7 @@ docker run --rm \
     -e AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY \
     -e AWS_DEFAULT_REGION=YOUR_AWS_DEFAULT_REGION \
-    misfit/docker-stats-cloudwatch \
+    misfit/node_container_advisor \
     node index.js \
     --test \
     --dry-run \
@@ -35,13 +35,13 @@ docker run --rm \
 ## run on server
 
 ```shell
-docker run -d --name docker-stats-cloudwatch \
+docker run -d --name node_container_advisor \
     --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -e AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY \
     -e AWS_DEFAULT_REGION=YOUR_AWS_DEFAULT_REGION \
-    misfit/docker-stats-cloudwatch \
+    misfit/node_container_advisor \
     node index.js \
     --instance-id=$(wget -q -O - http://169.254.169.254/latest/meta-data/instance-id)
 ```
