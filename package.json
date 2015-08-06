@@ -1,0 +1,19 @@
+{
+  "name": "docker-stats-test",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1.43",
+    "docker-allcontainers": "^0.4.0",
+    "docker-stats": "^0.4.0",
+    "moment": "^2.10.6",
+    "through2": "^2.0.0"
+  }
+}
