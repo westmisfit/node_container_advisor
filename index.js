@@ -118,27 +118,27 @@ function cloudwatchStorageDriver(opts){
      * Gigabits/Second | Terabits/Second | Count/Second | None
      */
     var metric_data = [
-        { MetricName: "MemoryUsage",
+        { MetricName: "MemoryUsageBytes",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
           Value: m.memory_usage,
-          Unit: "Megabytes" }
+          Unit: "Bytes" }
       , { MetricName: "MemoryPercent",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
           Value: m.memory_percent,
           Unit: "Percent" }
-      , { MetricName: "CPUUtilization",
+      , { MetricName: "CPUPercent",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
           Value: m.cpu_percent,
           Unit: "Percent" }
-      , { MetricName: "NetworkIn",
+      , { MetricName: "NetworkInBytes",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
           Value: calculateDeltaValue(m, 'network_rx_bytes'),
           Unit: "Bytes" }
-      , { MetricName: "NetworkOut",
+      , { MetricName: "NetworkOutBytes",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
           Value: calculateDeltaValue(m, 'network_tx_bytes'),
