@@ -118,7 +118,7 @@ function cloudwatchStorageDriver(opts){
      * Gigabits/Second | Terabits/Second | Count/Second | None
      */
     var metric_data = [
-        { MetricName: "MemoryUsageBytes",
+        { MetricName: "MemoryUsage",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
           Value: m.memory_usage,
@@ -136,16 +136,27 @@ function cloudwatchStorageDriver(opts){
       , { MetricName: "NetworkIn",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
-          Value: m.network_rx_bytes,
+          Value: calculateDeltaValue(m, 'network_rx_bytes'),
           Unit: "Bytes" }
       , { MetricName: "NetworkOut",
           Dimensions: dimensions,
           Timestamp: m.timestamp,
-          Value: m.network_tx_bytes,
+          Value: calculateDeltaValue(m, 'network_tx_bytes'),
           Unit: "Bytes" }
     ];
     // debug(metric_data);
     return metric_data;
+  }
+
+  function calculateDeltaValue(m, attr) {
+    var c = containers[m.id.substring(0,12)];
+    if (!c) { return 0; }
+    if (!c.previous) { c.previous = {}; }
+    if (!c.previous[attr]) { c.previous[attr] = m[attr]; }
+    // debug(c.previous);
+    var delta = m[attr] - c.previous[attr];
+    c.previous[attr] = m[attr];
+    return delta;
   }
 
   function trimMetrics(metrics) {
