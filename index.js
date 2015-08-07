@@ -43,9 +43,8 @@ function init(opts) {
 
   stats({events: ee}).pipe(through.obj(function(v, enc, next) {
     // debug(JSON.stringify(stat))
-    var c = containers[v.id]
+    var c = containers[v.id];
     if (!c) { return next(); }
-    // timestamp format: 2015-08-06T10:14:54.000Z
     var m = {
       id: c.Id,
       container_name: c.ContainerName,
@@ -58,10 +57,11 @@ function init(opts) {
       network_tx_bytes: v.stats.network.tx_bytes,
       memory_usage: v.stats.memory_stats.usage,
       memory_percent: Number((v.stats.memory_stats.usage / v.stats.memory_stats.limit * 100).toFixed(2)),
+      // timestamp format: 2015-08-06T10:14:54.000Z
       timestamp: moment().utc().toISOString()
-    }
+    };
     // debug(JSON.stringify(m))
-    metrics.push(m)
+    metrics.push(m);
     return next();
   }));
 }
@@ -102,42 +102,47 @@ function cloudwatchStorageDriver(opts){
     } else {
       dimensions.push({ Name: "ContainerName", Value: m.container_name });
     }
+    
+    /**
+     * Unit
+     *
+     * The unit of the metric.
+     * 
+     * Type: String
+     * 
+     * Valid Values: Seconds | Microseconds | Milliseconds | Bytes | 
+     * Kilobytes | Megabytes | Gigabytes | Terabytes | Bits | Kilobits | 
+     * Megabits | Gigabits | Terabits | Percent | Count | Bytes/Second | 
+     * Kilobytes/Second | Megabytes/Second | Gigabytes/Second | 
+     * Terabytes/Second | Bits/Second | Kilobits/Second | Megabits/Second | 
+     * Gigabits/Second | Terabits/Second | Count/Second | None
+     */
     var metric_data = [
-      {
-        MetricName: "MemoryUsage",
-        Dimensions: dimensions,
-        Timestamp: m.timestamp,
-        Value: Number((m.memory_usage/1024/1024).toFixed(2)),
-        Unit: "Megabytes"
-      }
-      , {
-        MetricName: "MemoryPercent",
-        Dimensions: dimensions,
-        Timestamp: m.timestamp,
-        Value: m.memory_percent,
-        Unit: "Percent"
-      }
-      , {
-        MetricName: "CPUUtilization",
-        Dimensions: dimensions,
-        Timestamp: m.timestamp,
-        Value: m.cpu_percent,
-        Unit: "Percent"
-      }
-      , {
-        MetricName: "NetworkIn",
-        Dimensions: dimensions,
-        Timestamp: m.timestamp,
-        Value: Number((m.network_rx_bytes/1024).toFixed(2)),
-        Unit: "Kilobytes"
-      }
-      , {
-        MetricName: "NetworkOut",
-        Dimensions: dimensions,
-        Timestamp: m.timestamp,
-        Value: Number((m.network_tx_bytes/1024).toFixed(2)),
-        Unit: "Kilobytes"
-      }
+        { MetricName: "MemoryUsageBytes",
+          Dimensions: dimensions,
+          Timestamp: m.timestamp,
+          Value: m.memory_usage,
+          Unit: "Megabytes" }
+      , { MetricName: "MemoryPercent",
+          Dimensions: dimensions,
+          Timestamp: m.timestamp,
+          Value: m.memory_percent,
+          Unit: "Percent" }
+      , { MetricName: "CPUUtilization",
+          Dimensions: dimensions,
+          Timestamp: m.timestamp,
+          Value: m.cpu_percent,
+          Unit: "Percent" }
+      , { MetricName: "NetworkIn",
+          Dimensions: dimensions,
+          Timestamp: m.timestamp,
+          Value: m.network_rx_bytes,
+          Unit: "Bytes" }
+      , { MetricName: "NetworkOut",
+          Dimensions: dimensions,
+          Timestamp: m.timestamp,
+          Value: m.network_tx_bytes,
+          Unit: "Bytes" }
     ];
     // debug(metric_data);
     return metric_data;
