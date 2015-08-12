@@ -180,7 +180,7 @@ function cloudwatchStorageDriver(opts){
     var data_array = [];
 
     if (metric_data.length === 0) {
-      cb(new Error("no metric data to put."), null);
+      return cb(new Error("no metric data to put."), null);
     }
 
     (function next(err, data) {
