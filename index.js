@@ -3,10 +3,29 @@ var through = require('through2')
   , allContainers = require('docker-allcontainers')
   , moment = require('moment')
   , AWS = require('aws-sdk')
+  , request = require('request')
 
 var containers = {};
 var metrics = [];
-var instance_id = "ip_192_168_0_1";
+var instance_id = null;
+
+function getInstanceId(cb) {
+  var opts = {
+    url: 'http://169.254.169.254/latest/meta-data/instance-id',
+    timeout: 1000
+  };
+  // debug('get instance_id...')
+  request(opts, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      instance_id = body;
+      // debug("instance_id =", instance_id);
+    } else {
+      instance_id = null;
+      // debug("can't get instance_id.")
+    }
+    return cb();
+  });
+}
 
 function init(opts) {
   // docker events explain
@@ -84,8 +103,9 @@ function cloudwatchStorageDriver(opts){
   var region = process.env['AWS_DEFAULT_REGION'] || 'us-east-1';
   var ret = {};
 
-  info('namespace:', namespace);
-  info('region:   ', region);
+  info('namespace:   ', namespace);
+  info('region:      ', region);
+  info('instance_id: ', instance_id);
 
   AWS.config.update({region: region});
 
@@ -251,8 +271,6 @@ function cli() {
   var argv = require('minimist')(process.argv.slice(2));
   // debug(argv);
   
-  instance_id = argv['instance-id'];
-
   var init_opts = {
       docker: null // here goes options for Dockerode
     , events: null // an instance of docker-allcontainers
@@ -272,9 +290,13 @@ function cli() {
     dry_run: !!argv['dry-run'],
     once: !!argv['once']
   };
-  // debug(instance_id);
+
   var interval = (argv['interval'] || 60) * 1000;
-  start(run_opts, interval);
+
+  getInstanceId(function () {
+    // debug('start...')
+    start(run_opts, interval);
+  });
 }
 
 if (require.main === module) {
